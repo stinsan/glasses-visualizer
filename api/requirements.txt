@@ -1,2 +1,3 @@
 Flask==1.1.1
 flask-restful
+gunicorn==19.3.0

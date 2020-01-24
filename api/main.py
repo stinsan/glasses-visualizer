@@ -9,20 +9,18 @@ api = Api(app)
 
 
 class HelloWorld(Resource):
-    """
-    Just a basic hello world as the root endpoint ('\').
-    I want to keep this here just cause.
-    """
+    #  Just a basic hello world as the root endpoint ('\').
+    #  want to keep this here just cause.
     def get(self):
         return {'hello': 'world'}
 
 
 class Upload(Resource):
-    """
-    POST method for uploading images. The endpoint is \upload.
-    At this moment, it just spits out a JSON with the encoded image string.
-    How to cURL: curl http://your-server/upload -F "image=@your-image.jpg".
-    """
+
+    #  POST method for uploading images. The endpoint is \upload.
+    #  At this moment, it just spits out a JSON with the encoded image string.
+    #  How to cURL: curl http://your-server/upload -F "image=@your-image.jpg".
+
     def post(self):
         parser = reqparse.RequestParser()  # Initialize the parser.
         parser.add_argument('image',       # Add 'image' as an argument of type FileStorage.
