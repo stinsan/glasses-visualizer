@@ -1,3 +1,9 @@
+# API things
 api/env/
 api/lib/
+
+# PyCharm things
 .idea
+
+# Don't push images used for testing
+.jpg 
