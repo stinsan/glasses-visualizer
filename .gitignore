@@ -1,8 +1,9 @@
 # API things
-api/env/
+api/venv/
 api/lib/
 
 # PyCharm things
+__pycache__
 .idea
 
 # Don't push images used for testing
