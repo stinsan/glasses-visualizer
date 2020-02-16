@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_restful import reqparse, Resource, Api
 from werkzeug import datastructures
+from monodepth2.test_simple import monodepth
 import werkzeug
 import base64
 
@@ -27,9 +28,12 @@ class Upload(Resource):
                             type=werkzeug.datastructures.FileStorage,
                             location='files')
         args = parser.parse_args()         # Get the arguments by parsing.
+        image = args['image']              # Get the image from the 'image' argument.
 
-        image = args['image']                           # Get the image from the 'image' argument.
-        encoded_image = base64.b64encode(image.read())  # Encode the image in base 64 so we can stick in a JSON object.
+        # The command arguments used to run Monodepth.
+        depth_map = monodepth(image)
+
+        encoded_image = base64.b64encode(depth_map)  # Encode the image in base 64 so we can stick in a JSON object.
         # The read() function turns the image (originally of type FileStorage) into a byte stream so it can be encoded.
 
         # Return the JSON object containing the base 64 encoding of the image.
