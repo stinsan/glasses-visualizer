@@ -4,23 +4,23 @@
 # which allows for non-commercial use only, the full terms of which are made
 # available in the LICENSE file.
 #
-# Modified by Justin Santos.
+# Modified by Justin Santos for use in the CS5053-Computer Graphics project
+# at the University of Oklahoma.
 
 from __future__ import absolute_import, division, print_function
 
 import os
 import io
-import sys
-import glob
-import argparse
 import numpy as np
 import PIL.Image as pil
 import matplotlib as mpl
 import matplotlib.cm as cm
 
 import torch
-from torchvision import transforms, datasets
+from torchvision import transforms
 
+# Local module imports, it should give you an error if
+# you're on an IDE, but trust me it works.
 import monodepth2.networks as networks
 from monodepth2.layers import disp_to_depth
 from monodepth2.utils import download_model_if_doesnt_exist
@@ -37,7 +37,6 @@ def monodepth(img):
     depth_decoder_path = os.path.join(model_path, "depth.pth")
 
     # LOADING PRETRAINED MODEL
-    print("   Loading pretrained encoder")
     encoder = networks.ResnetEncoder(18, False)
     loaded_dict_enc = torch.load(encoder_path, map_location=device)
 
@@ -49,9 +48,7 @@ def monodepth(img):
     encoder.to(device)
     encoder.eval()
 
-    print("   Loading pretrained decoder")
-    depth_decoder = networks.DepthDecoder(
-        num_ch_enc=encoder.num_ch_enc, scales=range(4))
+    depth_decoder = networks.DepthDecoder(num_ch_enc=encoder.num_ch_enc, scales=range(4))
 
     loaded_dict = torch.load(depth_decoder_path, map_location=device)
     depth_decoder.load_state_dict(loaded_dict)
@@ -85,6 +82,7 @@ def monodepth(img):
         colormapped_im = (mapper.to_rgba(disp_resized_np)[:, :, :3] * 255).astype(np.uint8)
         im = pil.fromarray(colormapped_im)
 
+        # Save as a bytes object
         im_byte_arr = io.BytesIO()
         im.save(im_byte_arr, format="png")
         im_byte_arr = im_byte_arr.getvalue()
