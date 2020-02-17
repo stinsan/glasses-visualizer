@@ -32,8 +32,7 @@ def monodepth(img):
     device = torch.device("cpu")
 
     model_name = "mono+stereo_640x192"
-    model_path = os.path.join("monodepth2\\models", model_name)
-    print("-> Loading model from ", model_path)
+    model_path = os.path.join("monodepth2/models", model_name)
     encoder_path = os.path.join(model_path, "encoder.pth")
     depth_decoder_path = os.path.join(model_path, "depth.pth")
 

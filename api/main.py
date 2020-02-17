@@ -12,7 +12,7 @@ api = Api(app)
 class HelloWorld(Resource):
     #  Just a basic hello world as the root endpoint ('\').
     #  want to keep this here just cause.
-    def get(self):
+    def get(self): 
         return {'hello': 'world'}
 
 
@@ -39,7 +39,7 @@ class Upload(Resource):
         # Return the JSON object containing the base 64 encoding of the image.
         # We must explicitly turn it into a string because it is originally of type bytes,
         # and bytes are not JSON serializable.
-        return {'image_base64': str(encoded_image, 'utf-8')}
+        return {'image': str(encoded_image, 'utf-8')}
 
 
 # Add the endpoints.

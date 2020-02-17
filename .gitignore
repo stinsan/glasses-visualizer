@@ -1,4 +1,5 @@
 # API things
+api/env/
 api/venv/
 api/lib/
 
@@ -6,5 +7,8 @@ api/lib/
 __pycache__
 .idea
 
+# Python things
+*.pyc
+
 # Don't push images used for testing
-.jpg 
+*.jpg 
