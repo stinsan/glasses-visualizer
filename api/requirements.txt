@@ -1,7 +1,7 @@
 google-cloud-storage
 Flask==1.1.1
 flask-restful
-gunicorn==19.3.0
+gunicorn==19.5.0
 Pillow==7.0.0
 numpy==1.18.1
 matplotlib==3.1.3
