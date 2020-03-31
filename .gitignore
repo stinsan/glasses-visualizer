@@ -1,7 +1,5 @@
-# API things
-api/env/
-api/venv/
-api/lib/
+# Virtual environments
+venv/
 
 # PyCharm things
 __pycache__
@@ -10,5 +8,6 @@ __pycache__
 # Python things
 *.pyc
 
-# Don't push images used for testing
-*.jpg 
+# Don't push miscellaneous test image files.
+*_disp.jpeg
+*.npy
