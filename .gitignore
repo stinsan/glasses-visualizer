@@ -8,6 +8,9 @@ __pycache__
 # Python things
 *.pyc
 
+# Monodepth models
+models/
+
 # Don't push miscellaneous files used for image testing.
 *_dist.jpeg
 *.npy
