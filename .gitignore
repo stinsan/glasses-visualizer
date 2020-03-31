@@ -1,9 +1,14 @@
 # API things
-api/env/
-api/lib/
+venv/
 
 # PyCharm things
+__pycache__
 .idea
 
-# Don't push images used for testing
-.jpg 
+# Python things
+*.pyc
+
+# Don't push miscellaneous files used for image testing.
+*_dist.jpeg
+*.npy
+
