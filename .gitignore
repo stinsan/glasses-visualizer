@@ -12,6 +12,6 @@ __pycache__
 models/
 
 # Don't push miscellaneous files used for image testing.
-*_dist.jpeg
+*_disp.jpeg
 *.npy
 
