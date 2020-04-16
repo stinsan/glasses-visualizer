@@ -10,7 +10,7 @@ from monodepth2.test_simple import test_simple
 from tkinter.filedialog import askopenfilename
 
 
-class Button():
+class Button:
     def __init__(self, x, y, width, height, color, text=''):
         self.x = x
         self.y = y
@@ -21,7 +21,7 @@ class Button():
 
     def draw(self, window):
         """ Draws the button onto the window.
-        :param window: The window we want to draw the button on.
+        :param window: The surface we want to draw the button on.
         """
         # Border for button: dark ass green.
         pygame.draw.rect(window, (0, 60, 0), (self.x - 2, self.y - 2, self.width + 4, self.height + 4), 0)
@@ -59,7 +59,8 @@ def monodepth(filename, model_name):
     """
     test_simple(filename, model_name)
 
-def upload_btn_handler():
+
+def upload_btn_handler(surface):
     """ Handles everything related to uploading an image.
     TODO: Gaussian blur would probably be called here somewhere.
     :return The PyGame surface object containing the resulting image.
@@ -81,19 +82,21 @@ def upload_btn_handler():
     img_local_filename = os.path.splitext(os.path.basename(img_global_filename))[0]
     depth_map_global_filename = os.path.join(output_directory, "{}_disp.jpeg".format(img_local_filename))
 
-    return pygame.image.load(depth_map_global_filename)  # Return the PyGame surface object.
+    img = pygame.image.load(depth_map_global_filename)  # Return the PyGame surface object.
+    surface.blit(img, (0, 0))
 
 
 if __name__ == '__main__':
     pygame.init()  # Initialize PyGame.
-    win = pygame.display.set_mode((1024, 676))  # Set the window dimensions.
-    pygame.display.set_caption('daddy weaver uwu')  # Name of the window.
+    main_surf = pygame.display.set_mode((1024, 676))
 
-    upload_btn = Button(460, 630, 100, 30, (0, 255, 0), 'Upload')   # Initialize the upload button.
+    pygame.display.set_caption('Glasses Visualizer')   # Name of the window.
+    upload_btn = Button(0, 630, 100, 30, (0, 255, 0), 'Upload')   # Initialize the upload button.
     is_running = True
 
     while is_running:
-        upload_btn.draw(win)        # Draw the upload button.
+        upload_btn.draw(main_surf)  # Draw the upload button.
+
         pygame.display.update()
 
         # Event handling.
@@ -110,5 +113,4 @@ if __name__ == '__main__':
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if upload_btn.is_hovered(mouse_pos):
                     # Get the modified image and show it onto the screen.
-                    img = upload_btn_handler()
-                    win.blit(img, (0, 0))
+                    upload_btn_handler(main_surf)
