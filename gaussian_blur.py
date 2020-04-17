@@ -127,8 +127,9 @@ def convolution(img, kernel):
     diff = time.time() - start
 
     print('Time taken: {}'.format(diff))
-    img.show()
-    v_img.show()
+    # img.show()
+    # v_img.show()
+    return v_img
 
 if __name__ == '__main__':
     fp = askopenfilename()

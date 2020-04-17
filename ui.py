@@ -8,7 +8,7 @@ import tkinter as tk
 import os
 from monodepth2.test_simple import test_simple
 from tkinter.filedialog import askopenfilename
-
+from gaussian_blur import *
 
 class Button:
     def __init__(self, x, y, width, height, color, text=''):
@@ -93,8 +93,18 @@ def upload_btn_handler(surface):
     img_local_filename = os.path.splitext(os.path.basename(img_global_filename))[0]
     depth_map_global_filename = os.path.join(output_directory, "{}_disp.jpeg".format(img_local_filename))
 
-    img = pygame.image.load(depth_map_global_filename)  # Return the PyGame surface object.
-    surface.blit(img, (0, 0))
+    kernel = gaussian_kernel(17, sd=1)  # creating the kernel or whateva
+    imgthang = Image.open(img_global_filename).convert('RGB')
+    img = convolution(imgthang, kernel)  # outputting the blurred image
+
+    mode = img.mode
+    size = img.size
+    data = img.tobytes()
+
+    py_image = pygame.image.fromstring(data, size, mode)
+
+    # img = pygame.image.load(depth_map_global_filename)  # Return the PyGame surface object.
+    surface.blit(py_image, (0, 0))
 
 
 if __name__ == '__main__':
