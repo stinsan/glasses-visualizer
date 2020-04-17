@@ -50,7 +50,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def test_simple(image_path, model_name):
+def test_simple(image_path, image_size, model_name):
     """Function to predict for a single image or folder of images
     """
     device = torch.device("cpu")
@@ -107,7 +107,7 @@ def test_simple(image_path, model_name):
                 continue
 
             # Load image and preprocess
-            input_image = pil.open(image_path).convert('RGB')
+            input_image = pil.open(image_path).resize(image_size).convert('RGB')
             original_width, original_height = input_image.size
             input_image = input_image.resize((feed_width, feed_height), pil.LANCZOS)
             input_image = transforms.ToTensor()(input_image).unsqueeze(0)

@@ -61,14 +61,13 @@ class Button:
     #     return self.select
 
 
-
-def monodepth(filename, model_name):
+def monodepth(filename, image_size, model_name):
     """ Runs Monodepth on an image using the given model. It outputs the depth map in the
     same directory as where the original image was.
     :param filename: The global file path of the image.
     :param model_name: The name of the model we want to use.
     """
-    return test_simple(filename, model_name)
+    return test_simple(filename, image_size, model_name)
 
 
 def upload_btn_handler(surface):
@@ -84,7 +83,7 @@ def upload_btn_handler(surface):
     # using the (hard-coded) model.
     img_global_filename = askopenfilename()
     monodepth_model = 'mono+stereo_1024x320'
-    depth_map = monodepth(img_global_filename, monodepth_model)
+    depth_map = monodepth(img_global_filename, (640, 427), monodepth_model)
 
     # Monodepth outputs a depth map with the file name
     # '<original-image-name>_disp.jpg' in the directory of the original image.
@@ -94,7 +93,7 @@ def upload_btn_handler(surface):
     depth_map_global_filename = os.path.join(output_directory, "{}_disp.jpeg".format(img_local_filename))
 
     kernel_vals = calculate_kernel_values_from_colormap(depth_map)
-    imgthang = Image.open(img_global_filename).convert('RGB')
+    imgthang = Image.open(img_global_filename).resize((640, 427)).convert('RGB')
     img = convolution(imgthang, kernel_vals)  # outputting the blurred image
 
     mode = img.mode
@@ -102,19 +101,21 @@ def upload_btn_handler(surface):
     data = img.tobytes()
 
     py_image = pygame.image.fromstring(data, size, mode)
+    py_image = pygame.transform.scale(py_image, (surface.get_size()))
 
-    # img = pygame.image.load(depth_map_global_filename)  # Return the PyGame surface object.
+    # Return the PyGame surface object.
     surface.blit(py_image, (0, 0))
 
 
 if __name__ == '__main__':
     pygame.init()  # Initialize PyGame.
-    main_surf = pygame.display.set_mode((1200, 676))
+    main_surf = pygame.display.set_mode((1240, 660))
     main_surf.fill((53,105,69)) # gray moss green background
 
-    # Set dimension for screen, where image is display
-    screen = main_surf.subsurface(Rect(200, 90, 800, 500))
-    screen.fill((197,222,204))
+    # Set dimension for screen, where image is displayed.
+    # Image resolutions should be 3:2 (640 x 427).
+    screen = main_surf.subsurface(Rect(200, 70, 840, 497))
+    screen.fill((197, 222, 204))
 
     pygame.display.set_caption('Glasses Visualizer')   # Name of the window.
 
@@ -125,9 +126,9 @@ if __name__ == '__main__':
     by_btn = Button(30, 270, 150, 50, (255, 255, 255), 'B/Y Colorblindness')    # Initialize the yg colorblind button.
     total_btn = Button(30, 340, 150, 50, (255, 255, 255), 'Total Colorblindness')   # Initialize the total colorblind button.
         # Right of Screen
-    myopia_btn = Button(1020, 200, 150, 50, (255, 255, 255), 'Myopia')   # Initialize the upload button.
-    hyperopia_btn = Button(1020, 270, 150, 50, (255, 255, 255), 'Hyperopia')   # Initialize the upload button.
-    glasses_btn = Button(1020, 340, 150, 50, (255, 255, 255), 'Glasses On')  # Initialize the glass button.
+    myopia_btn = Button(1060, 200, 150, 50, (255, 255, 255), 'Myopia')   # Initialize the upload button.
+    hyperopia_btn = Button(1060, 270, 150, 50, (255, 255, 255), 'Hyperopia')   # Initialize the upload button.
+    glasses_btn = Button(1060, 340, 150, 50, (255, 255, 255), 'Glasses On')  # Initialize the glass button.
 
     is_running = True
 
