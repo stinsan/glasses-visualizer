@@ -204,4 +204,3 @@ if __name__ == '__main__':
 
             # Key press
             """TODO: Change the values of myopia and hyperopia, have a pop-up to display the values"""
->>>>>>> 500a18930b3fd997669403b955b4922d612c88e2
