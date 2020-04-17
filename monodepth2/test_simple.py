@@ -50,14 +50,10 @@ def parse_args():
     return parser.parse_args()
 
 
-def test_simple(image_path):
+def test_simple(image_path, model_name):
     """Function to predict for a single image or folder of images
     """
-    model_name = "mono+stereo_640x192"
-    if torch.cuda.is_available() and not args.no_cuda:
-        device = torch.device("cuda")
-    else:
-        device = torch.device("cpu")
+    device = torch.device("cpu")
 
     download_model_if_doesnt_exist(model_name)
     model_path = os.path.join("models", model_name)
@@ -95,10 +91,10 @@ def test_simple(image_path):
         output_directory = os.path.dirname(image_path)
     elif os.path.isdir(image_path):
         # Searching folder for images
-        paths = glob.glob(os.path.join(image_path, '*.{}'.format(args.ext)))
+        paths = glob.glob(os.path.join(image_path, '*.jpg'))
         output_directory = image_path
     else:
-        raise Exception("Can not find args.image_path: {}".format(args.image_path))
+        raise Exception("Can not find image_path: {}".format(image_path))
 
     print("-> Predicting on {:d} test images".format(len(paths)))
 
