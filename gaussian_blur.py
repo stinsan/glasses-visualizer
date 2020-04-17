@@ -27,12 +27,8 @@ def gaussian_kernel(size, sd=1):
     return kernel_1d
 
 
-def vertical_convolution(img, kernel):
+def vertical_convolution(img, kernel_vals):
     img_width, img_height = img.size
-    kernel_width = len(kernel)
-    kernel_half = kernel_width // 2
-    kernel_tot = np.sum(kernel)
-
     orig_pixels = img.load()
     img_copy = img.copy()
     copy_pixels = img_copy.load()
@@ -41,6 +37,10 @@ def vertical_convolution(img, kernel):
     n = 0
     for img_y in range(img_height):
         for img_x in range(img_width):
+            kernel = gaussian_kernel(17, kernel_vals[img_y][img_x])
+            kernel_width = len(kernel)
+            kernel_half = kernel_width // 2
+            kernel_tot = np.sum(kernel)
 
             n += 1
             print('{} / {} done!'.format(n, img_height * img_width))
@@ -73,12 +73,8 @@ def vertical_convolution(img, kernel):
     return img_copy
 
 
-def horizontal_convolution(img, kernel):
+def horizontal_convolution(img, kernel_vals):
     img_width, img_height = img.size
-    kernel_width = len(kernel)
-    kernel_half = kernel_width // 2
-    kernel_tot = np.sum(kernel)
-
     orig_pixels = img.load()
     img_copy = img.copy()
     copy_pixels = img_copy.load()
@@ -87,6 +83,10 @@ def horizontal_convolution(img, kernel):
     n = 0
     for img_y in range(img_height):
         for img_x in range(img_width):
+            kernel = gaussian_kernel(17, kernel_vals[img_y][img_x])
+            kernel_width = len(kernel)
+            kernel_half = kernel_width // 2
+            kernel_tot = np.sum(kernel)
 
             n += 1
             print('{} / {} done!'.format(n, img_height * img_width))
@@ -119,17 +119,43 @@ def horizontal_convolution(img, kernel):
     return img_copy
 
 
-def convolution(img, kernel):
+def convolution(img, kernel_values):
     start = time.time()
-    h_img = horizontal_convolution(img, kernel)
-    v_img = vertical_convolution(h_img, kernel)
+
+    h_img = horizontal_convolution(img, kernel_values)
+    v_img = vertical_convolution(h_img, kernel_values)
 
     diff = time.time() - start
-
     print('Time taken: {}'.format(diff))
-    # img.show()
-    # v_img.show()
+
     return v_img
+
+
+def kernel_sd_function(color):
+    """
+
+    :param color:
+    :return:
+    """
+    return (1 - ((int(color[0]) + int(color[1]) + int(color[2])) / 765)) * 10
+
+
+def calculate_kernel_values_from_colormap(cm):
+    """
+    :param cm:
+    :return:
+    """
+    k_vals = []
+
+    for row in cm:
+        k_row_vals = []
+        for color in row:
+            k_row_vals.append(kernel_sd_function(color))
+
+        k_vals.append(k_row_vals)
+
+    return k_vals
+
 
 if __name__ == '__main__':
     fp = askopenfilename()

@@ -142,7 +142,7 @@ def test_simple(image_path, model_name):
                 idx + 1, len(paths), name_dest_im))
 
     print('-> Done!')
-
+    return colormapped_im
 
 if __name__ == '__main__':
     args = parse_args()
