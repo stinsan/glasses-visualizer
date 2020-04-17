@@ -68,7 +68,7 @@ def monodepth(filename, model_name):
     :param filename: The global file path of the image.
     :param model_name: The name of the model we want to use.
     """
-    test_simple(filename, model_name)
+    return test_simple(filename, model_name)
 
 
 def upload_btn_handler(surface):
@@ -84,7 +84,7 @@ def upload_btn_handler(surface):
     # using the (hard-coded) model.
     img_global_filename = askopenfilename()
     monodepth_model = 'mono+stereo_1024x320'
-    monodepth(img_global_filename, monodepth_model)
+    depth_map = monodepth(img_global_filename, monodepth_model)
 
     # Monodepth outputs a depth map with the file name
     # '<original-image-name>_disp.jpg' in the directory of the original image.
@@ -93,9 +93,9 @@ def upload_btn_handler(surface):
     img_local_filename = os.path.splitext(os.path.basename(img_global_filename))[0]
     depth_map_global_filename = os.path.join(output_directory, "{}_disp.jpeg".format(img_local_filename))
 
-    kernel = gaussian_kernel(17, sd=1)  # creating the kernel or whateva
+    kernel_vals = calculate_kernel_values_from_colormap(depth_map)
     imgthang = Image.open(img_global_filename).convert('RGB')
-    img = convolution(imgthang, kernel)  # outputting the blurred image
+    img = convolution(imgthang, kernel_vals)  # outputting the blurred image
 
     mode = img.mode
     size = img.size
