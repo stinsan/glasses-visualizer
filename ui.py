@@ -11,6 +11,7 @@ from tkinter.filedialog import askopenfilename
 from gaussian_blur import *
 import colorblind
 import glasses_animation as glasses
+import light_detection as ld
 
 
 class Button:
@@ -230,8 +231,10 @@ if __name__ == '__main__':
     # Left of Screen
     rg_btn = Button(26, 232, 150, 50, (255, 255, 255), (0, 60, 0), 'R/G Colorblindness')       # R/G colorblind
     by_btn = Button(26, 302, 150, 50, (255, 255, 255), (0, 60, 0), 'B/Y Colorblindness')       # B/Y colorblind
-    pygame.draw.rect(main_surf, (34, 69, 45), (16, 373, 170, 2), 0)                            # Button divider.
-    total_btn = Button(26, 397, 150, 50, (255, 255, 255), (0, 60, 0), 'Total Colorblindness')  # Total colorblind
+    total_btn = Button(26, 372, 150, 50, (255, 255, 255), (0, 60, 0), 'Total Colorblindness')  # Total colorblind
+    pygame.draw.rect(main_surf, (34, 69, 45), (16, 443, 170, 2), 0)
+    halos_btn = Button(26, 467, 150, 50, (255, 255, 255), (0, 60, 0), 'Halos')
+    starbursts_btn = Button(26, 537, 150, 50, (255, 255, 255), (0, 60, 0), 'Starbursts')
 
     # Right of Screen
     depth_map_btn = Button(1064, 147, 150, 50, (255, 255, 255), (0, 60, 0), 'Depth Map')
@@ -269,6 +272,8 @@ if __name__ == '__main__':
         hyperopia_btn.draw(12, main_surf)  # Draw the red-green colorblind button.
         depth_map_btn.draw(12, main_surf)
         blurred_btn.draw(12, main_surf)
+        halos_btn.draw(12, main_surf)
+        starbursts_btn.draw(12, main_surf)
 
         pygame.display.update()
 
@@ -297,6 +302,8 @@ if __name__ == '__main__':
                     by_btn.is_selected = False
                     total_btn.is_selected = False
                     depth_map_btn.is_selected = False
+                    halos_btn.is_selected = False
+                    starbursts_btn.is_selected = False
 
                     if rg_btn.is_selected:
                         if blurred_btn.is_selected:
@@ -331,6 +338,8 @@ if __name__ == '__main__':
                     rg_btn.is_selected = False
                     total_btn.is_selected = False
                     depth_map_btn.is_selected = False
+                    halos_btn.is_selected = False
+                    starbursts_btn.is_selected = False
 
                     if by_btn.is_selected:
                         if blurred_btn.is_selected:
@@ -365,6 +374,8 @@ if __name__ == '__main__':
                     rg_btn.is_selected = False
                     by_btn.is_selected = False
                     depth_map_btn.is_selected = False
+                    halos_btn.is_selected = False
+                    starbursts_btn.is_selected = False
 
                     if total_btn.is_selected:
                         if blurred_btn.is_selected:
@@ -393,6 +404,21 @@ if __name__ == '__main__':
                             blit_img(screen, orig_img)
                             curr_disp_img = orig_img
 
+                # ------------------------------------------------------------------------------------------------ HALOS
+                elif halos_btn.is_hovered(mouse_pos):
+                    halos_btn.is_selected = not halos_btn.is_selected
+                    starbursts_btn.is_selected = False
+
+                    if halos_btn.is_selected:
+                        ld.halo(screen, orig_img)
+                    else:
+                        blit_img(screen, curr_disp_img)
+
+                # ------------------------------------------------------------------------------------------- STARBURSTS
+                elif starbursts_btn.is_hovered(mouse_pos):
+                    starbursts_btn.is_selected = not starbursts_btn.is_selected
+                    halos_btn.is_selected = False
+
                 # -------------------------------------------------------------------------------------------- DEPTH MAP
                 elif depth_map_btn.is_hovered(mouse_pos):
                     depth_map_btn.is_selected = not depth_map_btn.is_selected
@@ -403,6 +429,8 @@ if __name__ == '__main__':
                     hyperopia_btn.is_selected = False
                     glasses_btn.is_selected = False
                     blurred_btn.is_selected = False
+                    halos_btn.is_selected = False
+                    starbursts_btn.is_selected = False
 
                     if depth_map_btn.is_selected:
                         # Monodepth image will be displayed.
@@ -516,7 +544,7 @@ if __name__ == '__main__':
                             if rg_colorblind_blurred_img is None:
                                 rg_colorblind_blurred_img = rg_btn_handler(screen, blurred_img)
 
-                            glasses.start_animation(screen, rg_colorblind_orig_img, rg_colorblind_blurred_img)
+                            glasses.start_up_animation(screen, rg_colorblind_orig_img, rg_colorblind_blurred_img)
 
                         elif by_btn.is_selected:
                             if by_colorblind_orig_img is None:
@@ -525,7 +553,7 @@ if __name__ == '__main__':
                             if by_colorblind_blurred_img is None:
                                 by_colorblind_blurred_img = by_btn_handler(screen, blurred_img)
 
-                            glasses.start_animation(screen, by_colorblind_orig_img, by_colorblind_blurred_img)
+                            glasses.start_up_animation(screen, by_colorblind_orig_img, by_colorblind_blurred_img)
 
                         elif total_btn.is_selected:
                             if total_colorblind_orig_img is None:
@@ -534,12 +562,40 @@ if __name__ == '__main__':
                             if total_colorblind_blurred_img is None:
                                 total_colorblind_blurred_img = total_btn_handler(screen, blurred_img)
 
-                            glasses.start_animation(screen, total_colorblind_orig_img, total_colorblind_blurred_img)
+                            glasses.start_up_animation(screen, total_colorblind_orig_img, total_colorblind_blurred_img)
 
                         else:
-                            glasses.start_animation(screen, orig_img, blurred_img)
+                            glasses.start_up_animation(screen, orig_img, blurred_img)
                     else:
-                        glasses.clear_glasses(screen, curr_disp_img)
+                        if rg_btn.is_selected:
+                            if rg_colorblind_orig_img is None:
+                                rg_colorblind_orig_img = rg_btn_handler(screen, orig_img)
+
+                            if rg_colorblind_blurred_img is None:
+                                rg_colorblind_blurred_img = rg_btn_handler(screen, blurred_img)
+
+                            glasses.start_down_animation(screen, rg_colorblind_orig_img, rg_colorblind_blurred_img)
+
+                        elif by_btn.is_selected:
+                            if by_colorblind_orig_img is None:
+                                by_colorblind_orig_img = by_btn_handler(screen, orig_img)
+
+                            if by_colorblind_blurred_img is None:
+                                by_colorblind_blurred_img = by_btn_handler(screen, blurred_img)
+
+                            glasses.start_down_animation(screen, by_colorblind_orig_img, by_colorblind_blurred_img)
+
+                        elif total_btn.is_selected:
+                            if total_colorblind_orig_img is None:
+                                total_colorblind_orig_img = total_btn_handler(screen, orig_img)
+
+                            if total_colorblind_blurred_img is None:
+                                total_colorblind_blurred_img = total_btn_handler(screen, blurred_img)
+
+                            glasses.start_down_animation(screen, total_colorblind_orig_img, total_colorblind_blurred_img)
+
+                        else:
+                            glasses.start_down_animation(screen, orig_img, blurred_img)
 
             # Key press
             """TODO: Change the values of myopia and hyperopia, have a pop-up to display the values"""
@@ -568,11 +624,17 @@ if __name__ == '__main__':
                 else:
                     total_btn.color = (255, 255, 255)
 
-            if not myopia_btn.is_selected:
-                if myopia_btn.is_hovered(mouse_pos):
-                    myopia_btn.color = (220, 220, 220)
+            if not halos_btn.is_selected:
+                if halos_btn.is_hovered(mouse_pos):
+                    halos_btn.color = (220, 220, 220)
                 else:
-                    myopia_btn.color = (255, 255, 255)
+                    halos_btn.color = (255, 255, 255)
+
+            if not starbursts_btn.is_selected:
+                if starbursts_btn.is_hovered(mouse_pos):
+                    starbursts_btn.color = (220, 220, 220)
+                else:
+                    starbursts_btn.color = (255, 255, 255)
             
             if not hyperopia_btn.is_selected:
                 if hyperopia_btn.is_hovered(mouse_pos):
