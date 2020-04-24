@@ -65,3 +65,31 @@ def halo(surface, img):
         lum = (0.2126 * r + 0.7152 * g + 0.0722 * b)  # get the luminocity of the point
         pygame.gfxdraw.filled_circle(surface, brightest_points[i].x, brightest_points[i].y, int(lum / 10),
                                      (r, g, b, 50))   # draw a filled circle for the halo
+
+def starburst(surface, img):
+    """ Create starburst affect on brightest light sources"""
+    if img is None:
+        return
+
+    img = img.resize(surface.get_size())
+    orig_pixels = img.load()
+
+    img_width, img_height = img.size
+
+    brightest_points = list_of_light_points(img, orig_pixels)
+
+    for i in range(20):  # get the 20 brightest points
+        r, g, b = orig_pixels[brightest_points[i].x, brightest_points[i].y]  # get the color of the point
+        lum = (0.2126 * r + 0.7152 * g + 0.0722 * b)  # get the luminocity of the point
+
+        x = brightest_points[i].x
+        y = brightest_points[i].y
+
+        leftx = x - (lum / 10)  # left corner of the starburst
+        rightx = x + (lum / 10)  # right corner of the starburst
+        topy = y + (lum / 10)  # top corner of the starburst
+        bottomy = y - (lum / 10)  # bottom corner of the starburst
+
+        if leftx > 0 and rightx < img_width and topy < img_height and bottomy > 0:  # check that starburst will be in image
+            pygame.gfxdraw.filled_polygon(surface, [[x - 3, y], [x, topy], [x + 3, y], [x, bottomy]], (r, g, b, 70))
+            pygame.gfxdraw.filled_polygon(surface, [[x, y - 3], [rightx, y], [x, y + 3], [leftx, y]], (r, g, b, 70))
