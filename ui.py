@@ -217,6 +217,9 @@ if __name__ == '__main__':
     main_surf.fill((53, 105, 69))  # Gray moss green background
     draw_extra_main_surface(main_surf)  # Draw other UI things.
 
+    myopiaVal = "-5.0"      #-6 to -3
+    hyperopiaVal = "3.0"    # 2 to 5
+
     # Set dimension for screen, where image is displayed.
     # Image resolutions should be 3:2 (640 x 427).
     screen = main_surf.subsurface(Rect(200, 100, 840, 497))
@@ -235,13 +238,23 @@ if __name__ == '__main__':
     starbursts_btn = Button(26, 537, 150, 50, (255, 255, 255), (0, 60, 0), 'Starbursts')
 
     # Right of Screen
-    depth_map_btn = Button(1064, 147, 150, 50, (255, 255, 255), (0, 60, 0), 'Depth Map')
-    blurred_btn = Button(1064, 217, 150, 50, (255, 255, 255), (0, 60, 0), 'Blurred')
-    pygame.draw.rect(main_surf, (34, 69, 45), (1054, 288, 170, 2), 0)                       # Button Divider
-    myopia_btn = Button(1064, 312, 150, 50, (255, 255, 255), (0, 60, 0), 'Myopia')          # Myopia button
-    hyperopia_btn = Button(1064, 382, 150, 50, (255, 255, 255), (0, 60, 0), 'Hyperopia')    # Hyperopia button
-    pygame.draw.rect(main_surf, (34, 69, 45), (1054, 453, 170, 2), 0)                       # Button Divider
-    glasses_btn = Button(1064, 487, 150, 50, (255, 255, 255), (0, 60, 0), 'Glasses On')     # Glasses button.
+    depth_map_btn = Button(1064, 137, 150, 50, (255, 255, 255), (0, 60, 0), 'Depth Map')
+    blurred_btn = Button(1064, 207, 150, 50, (255, 255, 255), (0, 60, 0), 'Blurred')
+    pygame.draw.rect(main_surf, (34, 69, 45), (1054, 278, 170, 2), 0)                       # Button Divider
+    myopia_btn = Button(1064, 302, 150, 50, (255, 255, 255), (0, 60, 0), 'Myopia')          # Myopia button
+    hyperopia_btn = Button(1064, 397, 150, 50, (255, 255, 255), (0, 60, 0), 'Hyperopia')    # Hyperopia button
+    pygame.draw.rect(main_surf, (34, 69, 45), (1054, 490, 170, 2), 0)                       # Button Divider
+    glasses_btn = Button(1064, 512, 150, 50, (255, 255, 255), (0, 60, 0), 'Glasses On')     # Glasses button.
+
+    downMyopia_btn = Button(1085, 360, 15, 15, (255, 255, 255), (0, 60, 0), '')
+    upMyopia_btn = Button(1105, 360, 15, 15, (255, 255, 255), (0, 60, 0), '')
+    myopiaVal_btn = Button(1127, 360, 40, 15, (197, 222, 204), (197, 222, 204), myopiaVal)
+    selectMyopia_btn = Button(1174, 360, 15, 15, (255, 255, 255), (0, 60, 0), '')
+
+    downHyperopia_btn = Button(1085, 456, 15, 15, (255, 255, 255), (0, 60, 0), '')
+    upHyperopia_btn = Button(1105, 456, 15, 15, (255, 255, 255), (0, 60, 0), '')
+    hyperopiaVal_btn = Button(1127, 456, 40, 15, (197, 222, 204), (197, 222, 204), hyperopiaVal)
+    selectHyperopia_btn = Button(1174, 456, 15, 15, (255, 255, 255), (0, 60, 0), '')
 
     curr_disp_img = None  # The currently displayed image, initially none.
 
@@ -268,6 +281,32 @@ if __name__ == '__main__':
         glasses_btn.draw(12, main_surf)    # Draw the total colorblind button.
         myopia_btn.draw(12, main_surf)     # Draw the red-green colorblind button.
         hyperopia_btn.draw(12, main_surf)  # Draw the red-green colorblind button.
+        depth_map_btn.draw(12, main_surf)  # Draw depth map button.
+        blurred_btn.draw(12, main_surf)    # Draw blurred button.
+
+        # Adjust myopia settings
+        upMyopia_btn.draw(12, main_surf)
+        downMyopia_btn.draw(12, main_surf)
+        downArrow1_img = pygame.image.load("images/downArrow.png")
+        main_surf.blit(downArrow1_img, (1087, 362))
+        upArrow1_img = pygame.image.load("images/upArrow.png")
+        main_surf.blit(upArrow1_img, (1107, 361))
+        myopiaVal_btn.draw(12, main_surf)
+        selectMyopia_btn.draw(12, main_surf)
+        check_img = pygame.image.load("images/check.png")
+        main_surf.blit(check_img, (1175, 363))
+
+        # Adjust hyperopia settings
+        upHyperopia_btn.draw(12, main_surf)
+        downHyperopia_btn.draw(12, main_surf)
+        downArrow2_img = pygame.image.load("images/downArrow.png")
+        main_surf.blit(downArrow2_img, (1087, 458))
+        upArrow2_img = pygame.image.load("images/upArrow.png")
+        main_surf.blit(upArrow2_img, (1107, 457))
+        hyperopiaVal_btn.draw(12, main_surf)
+        selectHyperopia_btn.draw(12, main_surf)
+        check2_img = pygame.image.load("images/check.png")
+        main_surf.blit(check2_img, (1175, 459))
         depth_map_btn.draw(12, main_surf)
         blurred_btn.draw(12, main_surf)
         halos_btn.draw(12, main_surf)
@@ -525,6 +564,20 @@ if __name__ == '__main__':
                     # Disable hyperopia colorblindness
                     hyperopia_btn.is_selected = False
                     """TODO: APPLY myopia here"""
+                
+                elif upMyopia_btn.is_hovered(mouse_pos):
+                    temp = float(myopiaVal)
+                    if (temp < -3):
+                        temp += 1
+                        myopiaVal = str(temp)
+                        myopiaVal_btn = Button(1127, 360, 40, 15, (197, 222, 204), (197, 222, 204), myopiaVal)
+
+                elif downMyopia_btn.is_hovered(mouse_pos):
+                    temp = float(myopiaVal)
+                    if (temp > -6):
+                        temp -= 1
+                        myopiaVal = str(temp)
+                        myopiaVal_btn = Button(1127, 360, 40, 15, (197, 222, 204), (197, 222, 204), myopiaVal)
 
                 # -------------------------------------------------------------------------------------------- HYPEROPIA
                 elif hyperopia_btn.is_hovered(mouse_pos):
@@ -533,6 +586,20 @@ if __name__ == '__main__':
                     # Disable myopia colorblindness
                     myopia_btn.is_selected = False
                     """TODO: APPLY hyperopia here"""
+
+                elif upHyperopia_btn.is_hovered(mouse_pos):
+                    temp = float(hyperopiaVal)
+                    if (temp < 5):
+                        temp += 1
+                        hyperopiaVal = str(temp)
+                        hyperopiaVal_btn = Button(1127, 456, 40, 15, (197, 222, 204), (197, 222, 204), hyperopiaVal)
+
+                elif downHyperopia_btn.is_hovered(mouse_pos):
+                    temp = float(hyperopiaVal)
+                    if (temp > 2):
+                        temp -= 1
+                        hyperopiaVal = str(temp)
+                        hyperopiaVal_btn = Button(1127, 456, 40, 15, (197, 222, 204), (197, 222, 204), hyperopiaVal)
 
                 # ---------------------------------------------------------------------------------------------- GLASSES
                 elif glasses_btn.is_hovered(mouse_pos):
@@ -671,3 +738,45 @@ if __name__ == '__main__':
                     depth_map_btn.color = (220, 220, 220)
                 else:
                     depth_map_btn.color = (255, 255, 255)
+
+            if not upMyopia_btn.is_selected:
+                if upMyopia_btn.is_hovered(mouse_pos):
+                    upMyopia_btn.color = (220, 220, 220)
+                else:
+                    upMyopia_btn.color = (255, 255, 255)
+
+            if not upMyopia_btn.is_selected:
+                if upMyopia_btn.is_hovered(mouse_pos):
+                    upMyopia_btn.color = (220, 220, 220)
+                else:
+                    upMyopia_btn.color = (255, 255, 255)
+
+            if not downMyopia_btn.is_selected:
+                if downMyopia_btn.is_hovered(mouse_pos):
+                    downMyopia_btn.color = (220, 220, 220)
+                else:
+                    downMyopia_btn.color = (255, 255, 255)
+
+            if not upHyperopia_btn.is_selected:
+                if upHyperopia_btn.is_hovered(mouse_pos):
+                    upHyperopia_btn.color = (220, 220, 220)
+                else:
+                    upHyperopia_btn.color = (255, 255, 255)
+
+            if not downHyperopia_btn.is_selected:
+                if downHyperopia_btn.is_hovered(mouse_pos):
+                    downHyperopia_btn.color = (220, 220, 220)
+                else:
+                    downHyperopia_btn.color = (255, 255, 255)
+
+            if not selectMyopia_btn.is_selected:
+                if selectMyopia_btn.is_hovered(mouse_pos):
+                    selectMyopia_btn.color = (220, 220, 220)
+                else:
+                    selectMyopia_btn.color = (255, 255, 255)
+
+            if not selectHyperopia_btn.is_selected:
+                if selectHyperopia_btn.is_hovered(mouse_pos):
+                    selectHyperopia_btn.color = (220, 220, 220)
+                else:
+                    selectHyperopia_btn.color = (255, 255, 255)
