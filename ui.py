@@ -1,9 +1,6 @@
 import pygame
 from pygame.locals import *
 
-from OpenGL.GL import *
-from OpenGL.GLU import *
-
 import tkinter as tk
 import os
 from monodepth2.test_simple import test_simple
@@ -418,6 +415,11 @@ if __name__ == '__main__':
                 elif starbursts_btn.is_hovered(mouse_pos):
                     starbursts_btn.is_selected = not starbursts_btn.is_selected
                     halos_btn.is_selected = False
+
+                    if starbursts_btn.is_selected:
+                        ld.starburst(screen, orig_img)
+                    else:
+                        blit_img(screen, curr_disp_img)
 
                 # -------------------------------------------------------------------------------------------- DEPTH MAP
                 elif depth_map_btn.is_hovered(mouse_pos):
