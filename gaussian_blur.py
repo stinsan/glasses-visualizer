@@ -34,7 +34,6 @@ def vertical_convolution(img, kernel_vals):
     copy_pixels = img_copy.load()
 
     # For every pixel in image
-    n = 0
     for img_y in range(img_height):
         for img_x in range(img_width):
             kernel = gaussian_kernel(17, kernel_vals[img_y][img_x])
@@ -42,8 +41,6 @@ def vertical_convolution(img, kernel_vals):
             kernel_half = kernel_width // 2
             kernel_tot = np.sum(kernel)
 
-            n += 1
-            print('{} / {} done!'.format(n, img_height * img_width))
             # For every value in kernel
             new_r, new_g, new_b = 0, 0, 0
             for kernel_offset in range(-kernel_half, kernel_half + 1):
@@ -80,7 +77,6 @@ def horizontal_convolution(img, kernel_vals):
     copy_pixels = img_copy.load()
 
     # For every pixel in image
-    n = 0
     for img_y in range(img_height):
         for img_x in range(img_width):
             kernel = gaussian_kernel(17, kernel_vals[img_y][img_x])
@@ -88,8 +84,6 @@ def horizontal_convolution(img, kernel_vals):
             kernel_half = kernel_width // 2
             kernel_tot = np.sum(kernel)
 
-            n += 1
-            print('{} / {} done!'.format(n, img_height * img_width))
             # For every value in kernel
             new_r, new_g, new_b = 0, 0, 0
             for kernel_offset in range(-kernel_half, kernel_half + 1):
@@ -123,10 +117,12 @@ def convolution(img, kernel_values):
     start = time.time()
 
     h_img = horizontal_convolution(img, kernel_values)
+    print('Horizontal convolution complete!')
     v_img = vertical_convolution(h_img, kernel_values)
+    print('Vertical convolution complete!')
 
     diff = time.time() - start
-    print('Time taken: {}'.format(diff))
+    print('Blurring time taken: {}'.format(diff))
 
     return v_img
 
@@ -158,11 +154,3 @@ def calculate_kernel_values_from_colormap(cm):
         k_vals.append(k_row_vals)
 
     return k_vals
-
-
-if __name__ == '__main__':
-    fp = askopenfilename()
-    img = Image.open(fp).convert('RGB')
-    kernel = gaussian_kernel(101, sd=5)
-
-    convolution(img, kernel)

@@ -9,24 +9,27 @@ import os
 from monodepth2.test_simple import test_simple
 from tkinter.filedialog import askopenfilename
 from gaussian_blur import *
+import colorblind
+
 
 class Button:
-    def __init__(self, x, y, width, height, color, borderColor, text=''):
+    def __init__(self, x, y, width, height, color, border_color, text=''):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
-        self.color = color
-        self.borderColor = borderColor
+        self.orig_color = color # Original color at initialization.
+        self.color = color      # The current color.
+        self.border_color = border_color
         self.text = text  # Default no text.
-        self.select = False # button's state of being selected
+        self.is_selected = False  # Is button selected?
 
     def draw(self, font_size, window):
         """ Draws the button onto the window.
         :param window: The surface we want to draw the button on.
         """
         # Border for button
-        pygame.draw.rect(window, self.borderColor, (self.x - 2, self.y - 2, self.width + 4, self.height + 4), 0)
+        pygame.draw.rect(window, self.border_color, (self.x - 2, self.y - 2, self.width + 4, self.height + 4), 0)
 
         # Main rectangle for button.
         pygame.draw.rect(window, self.color, (self.x, self.y, self.width, self.height), 0)
@@ -41,6 +44,13 @@ class Button:
             # Draw text at center of button.
             window.blit(text, center)
 
+        # If the button is currently selected, it's green.
+        # Else, it's white.
+        if self.is_selected:
+            self.color = (67, 168, 94)
+        else:
+            self.color = self.orig_color
+
     def is_hovered(self, mouse_pos):
         """ Is the mouse hovering over the button?
         :param mouse_pos: The position of the mouse.
@@ -52,14 +62,32 @@ class Button:
 
         return False
 
-    def setColor(self, color):
-        self.color = color
 
-    def setSelect(self, select):
-        self.select = select
+def draw_extra_main_surface(main_surface):
+    """ Draws extra UI elements onto the main surface.
+    :param surface: The main surface.
+    """
 
-    def getSelect(self):
-        return self.select
+    # Add background lines.
+    curr_x = 50
+    while curr_x <= 1500:
+        pygame.draw.line(main_surface, (60, 117, 78), (curr_x, 0), (curr_x - 300, 690), 5)
+        curr_x += 50
+
+    # Title
+    pygame.display.set_caption('Glasses Visualizer')   # Name of the window.
+
+    # Draw Logo
+    logo_img = pygame.image.load("images/logo.png")
+    main_surface.blit(logo_img, (335, 28))
+
+    # Copyright Text
+    copyright_img = pygame.image.load("images/copyright.png")
+    main_surface.blit(copyright_img, (1140, 665))
+
+
+def draw_extra_screen(screen):
+    return
 
 
 def monodepth(filename, image_size, model_name):
@@ -71,9 +99,27 @@ def monodepth(filename, image_size, model_name):
     return test_simple(filename, image_size, model_name)
 
 
+def blit_img(surface, img):
+    """
+    Given a PIL image, blits it onto the surface.
+    :param surface: The surface we're blitting to.
+    :param img: A PIL image. HAS TO BE A PIL IMAGE!
+    """
+    if img is None:
+        return
+
+    mode = img.mode
+    size = img.size
+    data = img.tobytes()
+
+    py_image = pygame.image.fromstring(data, size, mode)
+    py_image = pygame.transform.scale(py_image, (surface.get_size()))
+
+    surface.blit(py_image, (0, 0))
+
+
 def upload_btn_handler(surface):
     """ Handles everything related to uploading an image.
-    TODO: Gaussian blur would probably be called here somewhere.
     :return The PyGame surface object containing the resulting image.
     """
     root = tk.Tk()
@@ -92,31 +138,67 @@ def upload_btn_handler(surface):
     output_directory = os.path.dirname(img_global_filename)
     img_local_filename = os.path.splitext(os.path.basename(img_global_filename))[0]
     depth_map_global_filename = os.path.join(output_directory, "{}_disp.jpeg".format(img_local_filename))
+    monodepth_img = Image.open(depth_map_global_filename).resize((640, 427)).convert('RGB')
 
     kernel_vals = calculate_kernel_values_from_colormap(depth_map)
-    imgthang = Image.open(img_global_filename).resize((640, 427)).convert('RGB')
-    img = convolution(imgthang, kernel_vals)  # outputting the blurred image
+    orig_img = Image.open(img_global_filename).resize((640, 427)).convert('RGB')
+    blurred_img = convolution(orig_img, kernel_vals)  # outputting the blurred image
 
-    mode = img.mode
-    size = img.size
-    data = img.tobytes()
+    blit_img(surface, blurred_img)
 
-    py_image = pygame.image.fromstring(data, size, mode)
-    py_image = pygame.transform.scale(py_image, (surface.get_size()))
+    return orig_img, monodepth_img, blurred_img  # Return the PIL image
 
-    # Return the PyGame surface object.
-    surface.blit(py_image, (0, 0))
+
+def rg_btn_handler(surface, img):
+    """
+    :param surface:
+    :param img:
+    :return:
+    """
+    if img is None:
+        return
+
+    rg_colorblind_img = colorblind.rg(img)
+    blit_img(surface, rg_colorblind_img)
+
+    return rg_colorblind_img
+
+
+def by_btn_handler(surface, img):
+    """
+    :param surface:
+    :param img:
+    :return:
+    """
+    if img is None:
+        return
+
+    by_colorblind_img = colorblind.by(img)
+    blit_img(surface, by_colorblind_img)
+
+    return by_colorblind_img
+
+
+def total_btn_handler(surface, img):
+    """
+    :param surface:
+    :param img:
+    :return:
+    """
+    if img is None:
+        return
+
+    by_colorblind_img = colorblind.total(img)
+    blit_img(surface, by_colorblind_img)
+
+    return by_colorblind_img
+
 
 if __name__ == '__main__':
     pygame.init()  # Initialize PyGame.
     main_surf = pygame.display.set_mode((1240, 690))
-    main_surf.fill((53,105,69)) # gray moss green background
-
-    # Add background lines
-    currX = 50
-    while currX <= 1500:
-        pygame.draw.line(main_surf, (60, 117, 78), (currX, 0), (currX - 300, 690), 5)
-        currX += 50
+    main_surf.fill((53, 105, 69))  # gray moss green background
+    draw_extra_main_surface(main_surf)  # Draw other UI things.
 
     # Set dimension for screen, where image is displayed.
     # Image resolutions should be 3:2 (640 x 427).
@@ -128,51 +210,57 @@ if __name__ == '__main__':
     pygame.draw.line(screen, (170, 191, 176), (0, 0), (0, 497), 15)
     pygame.draw.line(screen, (145, 163, 150), (0, 0), (7, 7), 1)
 
-    # Title
-    pygame.display.set_caption('Glasses Visualizer')   # Name of the window.
-
-    # Draw Logo
-    logo_img = pygame.image.load("images/logo.png")
-    main_surf.blit(logo_img, (335, 28))
-
     # Add Upload Text
     font = pygame.font.SysFont('lato', 42)
     text1 = font.render("Please Upload", 1, (152, 171, 157))
     text2 = font.render("a Picture", 1, (152, 171, 157))
-    screen.blit(text1, (280, 150))
-    screen.blit(text2, (330, 200))
+    screen.blit(text1, (315, 150))
+    screen.blit(text2, (355, 200))
 
     # Draw Arrow
     arrow_img = pygame.image.load("images/arrow.png")
     screen.blit(arrow_img, (360, 260))
 
-    # Copyright Text
-    copyright_img = pygame.image.load("images/copyright.png")
-    main_surf.blit(copyright_img, (1140, 665))
-
     # Bottom of Screen
     upload_btn = Button(555, 625, 120, 35, (191, 117, 105), (87, 13, 13), 'UPLOAD')   # Initialize the upload button.
+
     # Left of Screen
-    rg_btn = Button(26, 232, 150, 50, (255, 255, 255), (0, 60, 0), 'R/G Colorblindness')      # Initialize the rg colorblind button.
-    by_btn = Button(26, 302, 150, 50, (255, 255, 255), (0, 60, 0), 'B/Y Colorblindness')      # Initialize the yg colorblind button.
-    pygame.draw.rect(main_surf, (34, 69, 45), (16, 373, 170, 2), 0)                 # DIVIDER
-    total_btn = Button(26, 397, 150, 50, (255, 255, 255), (0, 60, 0), 'Total Colorblindness') # Initialize the total colorblind button.
+    rg_btn = Button(26, 232, 150, 50, (255, 255, 255), (0, 60, 0), 'R/G Colorblindness')       # R/G colorblind
+    by_btn = Button(26, 302, 150, 50, (255, 255, 255), (0, 60, 0), 'B/Y Colorblindness')       # B/Y colorblind
+    pygame.draw.rect(main_surf, (34, 69, 45), (16, 373, 170, 2), 0)                            # Button divider.
+    total_btn = Button(26, 397, 150, 50, (255, 255, 255), (0, 60, 0), 'Total Colorblindness')  # Total colorblind
+
     # Right of Screen
-    myopia_btn = Button(1064, 232, 150, 50, (255, 255, 255), (0, 60, 0), 'Myopia')   # Initialize the upload button.
-    hyperopia_btn = Button(1064, 302, 150, 50, (255, 255, 255), (0, 60, 0), 'Hyperopia')   # Initialize the upload button.
-    pygame.draw.rect(main_surf, (34, 69, 45), (1054, 373, 170, 2), 0)
-    glasses_btn = Button(1064, 397, 150, 50, (255, 255, 255), (0, 60, 0), 'Glasses On')  # Initialize the glass button.
+    depth_map_btn = Button(1064, 147, 150, 50, (255, 255, 255), (0, 60, 0), 'Depth Map')
+    blurred_btn = Button(1064, 217, 150, 50, (255, 255, 255), (0, 60, 0), 'Blurred')
+    pygame.draw.rect(main_surf, (34, 69, 45), (1054, 288, 170, 2), 0)                       # Button Divider
+    myopia_btn = Button(1064, 312, 150, 50, (255, 255, 255), (0, 60, 0), 'Myopia')          # Myopia button
+    hyperopia_btn = Button(1064, 382, 150, 50, (255, 255, 255), (0, 60, 0), 'Hyperopia')    # Hyperopia button
+    pygame.draw.rect(main_surf, (34, 69, 45), (1054, 453, 170, 2), 0)                       # Button Divider
+    glasses_btn = Button(1064, 487, 150, 50, (255, 255, 255), (0, 60, 0), 'Glasses On')     # Glasses button.
 
     is_running = True
 
+    orig_img = None
+    monodepth_img = None
+    blurred_img = None
+    rg_colorblind_blurred_img = None
+    rg_colorblind_orig_img = None
+    by_colorblind_blurred_img = None
+    by_colorblind_orig_img = None
+    total_colorblind_blurred_img = None
+    total_colorblind_orig_img = None
+
     while is_running:
-        upload_btn.draw(20, main_surf)    # Draw the upload button.
-        rg_btn.draw(12, main_surf)        # Draw the red-green colorblind button.
-        by_btn.draw(12, main_surf)        # Draw the blue-yellow colorblind button.
-        total_btn.draw(12, main_surf)     # Draw the total colorblind button.
-        glasses_btn.draw(12, main_surf)   # Draw the total colorblind button.
-        myopia_btn.draw(12, main_surf)    # Draw the red-green colorblind button.
-        hyperopia_btn.draw(12, main_surf) # Draw the red-green colorblind button.
+        upload_btn.draw(20, main_surf)     # Draw the upload button.
+        rg_btn.draw(12, main_surf)         # Draw the red-green colorblind button.
+        by_btn.draw(12, main_surf)         # Draw the blue-yellow colorblind button.
+        total_btn.draw(12, main_surf)      # Draw the total colorblind button.
+        glasses_btn.draw(12, main_surf)    # Draw the total colorblind button.
+        myopia_btn.draw(12, main_surf)     # Draw the red-green colorblind button.
+        hyperopia_btn.draw(12, main_surf)  # Draw the red-green colorblind button.
+        depth_map_btn.draw(12, main_surf)
+        blurred_btn.draw(12, main_surf)
 
         pygame.display.update()
 
@@ -189,97 +277,153 @@ if __name__ == '__main__':
             # Left click.
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if upload_btn.is_hovered(mouse_pos):
-                    # Get the modified image and show it onto the screen.
-                    upload_btn_handler(screen)
+                    # Get the original and modified image and show the modified one onto the screen.
+                    blurred_btn.is_selected = True
+                    orig_img, monodepth_img, blurred_img = upload_btn_handler(screen)
 
                 # For colorblind buttons
                 elif rg_btn.is_hovered(mouse_pos):  # Red Green button listener
-                    rg_btn.setColor((67,168,94))
-                    rg_btn.setSelect(True)
-                        # Disable total colorblindness
-                    total_btn.setColor((255, 255, 255))
-                    total_btn.setSelect(False)
-                    """TODO: APPLY red-green colorblindness here"""
+                    rg_btn.is_selected = not rg_btn.is_selected
+                    by_btn.is_selected = False
+                    total_btn.is_selected = False
+
+                    if rg_btn.is_selected:
+                        if blurred_btn.is_selected:
+                            if rg_colorblind_blurred_img is None:
+                                rg_colorblind_blurred_img = rg_btn_handler(screen, blurred_img)
+                            else:
+                                blit_img(screen, rg_colorblind_blurred_img)
+                        else:
+                            if rg_colorblind_orig_img is None:
+                                rg_colorblind_orig_img = rg_btn_handler(screen, orig_img)
+                            else:
+                                blit_img(screen, rg_colorblind_orig_img)
+                    else:
+                        blit_img(screen, blurred_img)
 
                 elif by_btn.is_hovered(mouse_pos):  # Blue Yellow button listener
-                    by_btn.setColor((67,168,94))
-                    by_btn.setSelect(True)
-                        # Disable total colorblindness
-                    total_btn.setColor((255, 255, 255))
-                    total_btn.setSelect(False)
-                    """TODO: APPLY blue yellow colorblindness here"""
+                    by_btn.is_selected = not by_btn.is_selected
+                    rg_btn.is_selected = False
+                    total_btn.is_selected = False
+
+                    if by_btn.is_selected:
+                        if blurred_btn.is_selected:
+                            if by_colorblind_blurred_img is None:
+                                by_colorblind_blurred_img = by_btn_handler(screen, blurred_img)
+                            else:
+                                blit_img(screen, by_colorblind_blurred_img)
+                        else:
+                            if by_colorblind_orig_img is None:
+                                by_colorblind_orig_img = by_btn_handler(screen, orig_img)
+                            else:
+                                blit_img(screen, by_colorblind_orig_img)
+                    else:
+                        blit_img(screen, blurred_img)
 
                 elif total_btn.is_hovered(mouse_pos):  # Total button listener
-                    total_btn.setColor((67,168,94))
-                    total_btn.setSelect(True)
-                        # Disable red-green and blue-yellow colorblindness
-                    rg_btn.setColor((255, 255, 255))
-                    rg_btn.setSelect(False)
-                    by_btn.setColor((255, 255, 255))
-                    by_btn.setSelect(False)
-                    """TODO: APPLY total colorblindness here"""
+                    total_btn.is_selected = not total_btn.is_selected
+                    rg_btn.is_selected = False
+                    by_btn.is_selected = False
+
+                    if total_btn.is_selected:
+                        if blurred_btn.is_selected:
+                            if total_colorblind_blurred_img is None:
+                                total_colorblind_blurred_img = total_btn_handler(screen, blurred_img)
+                            else:
+                                blit_img(screen, total_colorblind_blurred_img)
+                        else:
+                            if total_colorblind_orig_img is None:
+                                total_colorblind_orig_img = total_btn_handler(screen, orig_img)
+                            else:
+                                blit_img(screen, total_colorblind_orig_img)
+                    else:
+                        blit_img(screen, blurred_img)
+
+                elif depth_map_btn.is_hovered(mouse_pos):
+                    depth_map_btn.is_selected = not depth_map_btn.is_selected
+                    rg_btn.is_selected = False
+                    by_btn.is_selected = False
+                    total_btn.is_selected = False
+                    myopia_btn.is_selected = False
+                    hyperopia_btn.is_selected = False
+                    glasses_btn.is_selected = False
+                    blurred_btn.is_selected = False
+
+                    if depth_map_btn.is_selected:
+                        blit_img(screen, monodepth_img)
+                    else:
+                        blit_img(screen, blurred_img)
+
+                elif blurred_btn.is_hovered(mouse_pos):
+                    blurred_btn.is_selected = not blurred_btn.is_selected
+                    depth_map_btn.is_selected = False
+                    myopia_btn.is_selected = False
+                    hyperopia_btn.is_selected = False
+                    glasses_btn.is_selected = False
+
+                    if blurred_btn.is_selected:
+                        if rg_btn.is_selected:
+                            if rg_colorblind_blurred_img is None:
+                                rg_colorblind_blurred_img = rg_btn_handler(screen, blurred_img)
+                            else:
+                                blit_img(screen, rg_colorblind_blurred_img)
+                        elif by_btn.is_selected:
+                            if by_colorblind_blurred_img is None:
+                                by_colorblind_blurred_img = by_btn_handler(screen, blurred_img)
+                            else:
+                                blit_img(screen, by_colorblind_blurred_img)
+                        elif total_btn.is_selected:
+                            if total_colorblind_blurred_img is None:
+                                total_colorblind_blurred_img = total_btn_handler(screen, blurred_img)
+                            else:
+                                blit_img(screen, by_colorblind_blurred_img)
+                        else:
+                            blit_img(screen, blurred_img)
+                    else:
+                        if rg_btn.is_selected:
+                            if rg_colorblind_orig_img is None:
+                                rg_colorblind_orig_img = rg_btn_handler(screen, orig_img)
+                            else:
+                                blit_img(screen, rg_colorblind_orig_img)
+                        elif by_btn.is_selected:
+                            if by_colorblind_orig_img is None:
+                                by_colorblind_orig_img = by_btn_handler(screen, orig_img)
+                            else:
+                                blit_img(screen, by_colorblind_orig_img)
+                        elif total_btn.is_selected:
+                            if total_colorblind_orig_img is None:
+                                total_colorblind_orig_img = total_btn_handler(screen, orig_img)
+                            else:
+                                blit_img(screen, total_colorblind_orig_img)
+                        else:
+                            blit_img(screen, orig_img)
 
                 # For refractive buttons
                 elif myopia_btn.is_hovered(mouse_pos):  # Myopia button listener
-                    myopia_btn.setColor((67,168,94))
-                    myopia_btn.setSelect(True)
-                        # Disable hyperopia colorblindness
-                    hyperopia_btn.setColor((255, 255, 255))
-                    hyperopia_btn.setSelect(False)
+                    myopia_btn.is_selected = not myopia_btn.is_selected
+
+                    # Disable hyperopia colorblindness
+                    hyperopia_btn.is_selected = False
                     """TODO: APPLY myopia here"""
                 
                 elif hyperopia_btn.is_hovered(mouse_pos):  # Hyperopia button listener
-                    hyperopia_btn.setColor((67,168,94))
-                    hyperopia_btn.setSelect(True)
-                        # Disable myopia colorblindness
-                    myopia_btn.setColor((255, 255, 255))
-                    myopia_btn.setSelect(False)
+                    hyperopia_btn.is_selected = not hyperopia_btn.is_selected
+
+                    # Disable myopia colorblindness
+                    myopia_btn.is_selected = False
                     """TODO: APPLY hyperopia here"""
 
                 elif glasses_btn.is_hovered(mouse_pos):  # Hyperopia button listener
-                    glasses_btn.setColor((67,168,94))
-                    glasses_btn.setSelect(True)
+                    glasses_btn.is_selected = not glasses_btn.is_selected
                     glasses_img = pygame.image.load("images/glasses.png")
                     screen.blit(glasses_img, (78, 100))
                     """TODO: APPLY glasses here (correct colorblind or myopia etc.)"""
-            
-            # Right click
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
-                # For colorblind buttons
-                if rg_btn.is_hovered(mouse_pos) and rg_btn.getSelect(): # Red Green button listener
-                    rg_btn.setColor((255, 255, 255))
-                    rg_btn.setSelect(False)
-                    """TODO: UNAPPLY red-green colorblindness here"""
 
-                elif by_btn.is_hovered(mouse_pos) and by_btn.getSelect(): # Blue Yellow button listener
-                    by_btn.setColor((255, 255, 255))
-                    by_btn.setSelect(False)
-                    """TODO: UNAPPLY blue yellow colorblindness here"""
-
-                elif total_btn.is_hovered(mouse_pos) and total_btn.getSelect(): # Total button listener
-                    total_btn.setColor((255, 255, 255))
-                    total_btn.setSelect(False)
-                    """TODO: UNAPPLY total colorblindness here"""
-
-                # For refractive buttons
-                elif myopia_btn.is_hovered(mouse_pos) and myopia_btn.getSelect():  # Myopia button listener
-                    myopia_btn.setColor((255, 255, 255))
-                    myopia_btn.setSelect(False)
-                    """TODO: UNAPPLY myopia here"""
-                
-                elif hyperopia_btn.is_hovered(mouse_pos) and hyperopia_btn.getSelect():  # Hyperopia button listener
-                    hyperopia_btn.setColor((255, 255, 255))
-                    hyperopia_btn.setSelect(False)
-                    """TODO: UNAPPLY hyperopia here"""
-
-                elif glasses_btn.is_hovered(mouse_pos) and glasses_btn.getSelect():  # Hyperopia button listener
-                    glasses_btn.setColor((255, 255, 255))
-                    glasses_btn.setSelect(False)
-                    """TODO: UNAPPLY glasses here (apply colorblind or myopia etc.)"""
 
             # Key press
             """TODO: Change the values of myopia and hyperopia, have a pop-up to display the values"""
 
+            """
             # Hovering
             if upload_btn.is_hovered(mouse_pos):
                 upload_btn.setColor((138, 84, 74))
@@ -321,3 +465,4 @@ if __name__ == '__main__':
                     glasses_btn.setColor((220, 220, 220))
                 else:
                     glasses_btn.setColor((255, 255, 255))
+            """
