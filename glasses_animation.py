@@ -67,18 +67,18 @@ def draw_composite(surface, rects, clear_image, blurred_image):
     return composite
 
 
-def start_animation(surface, clear_image, blurred_image):
-
+def start_up_animation(surface, clear_image, blurred_image):
     if clear_image is None or blurred_image is None:
         return
 
-    dy_glasses = 360
-    dy_mask = 300
-    for _ in range(60):
+    for i in range(61):
+
+        dy_glasses = 360 * ease_in_out_back(1 - (i / 60))
+        dy_mask = 300 * ease_in_out_back(1 - (i / 60))
+
         glasses_rects = [(x, y + dy_glasses, w, l) for x, y, w, l in GLASSES_RECTS]
         mask_rects = [(x1, y1 + dy_mask, x2, y2 + dy_mask) for x1, y1, x2, y2 in MASK_RECTS]
         bridge = (GLASSES_BRIDGE[0], GLASSES_BRIDGE[1] + dy_glasses, GLASSES_BRIDGE[2], GLASSES_BRIDGE[3])
-
 
         composite_img = draw_composite(surface, mask_rects, clear_image, blurred_image)
         # Transform PIL image to PyGame Surface.
@@ -87,7 +87,42 @@ def start_animation(surface, clear_image, blurred_image):
         clear_glasses(surface, composite_img)
 
         draw_glasses(surface, glasses_rects, bridge)
-        dy_glasses -= 6
-        dy_mask -= 5
 
         pygame.display.update()
+
+
+def start_down_animation(surface, clear_image, blurred_image):
+    if clear_image is None or blurred_image is None:
+        return
+
+    for i in range(61):
+        dy_glasses = 360 * ease_in_out_back(i / 60)
+        dy_mask = 300 * ease_in_out_back(i / 60)
+
+        glasses_rects = [(x, y + dy_glasses, w, l) for x, y, w, l in GLASSES_RECTS]
+        mask_rects = [(x1, y1 + dy_mask, x2, y2 + dy_mask) for x1, y1, x2, y2 in MASK_RECTS]
+        bridge = (GLASSES_BRIDGE[0], GLASSES_BRIDGE[1] + dy_glasses, GLASSES_BRIDGE[2], GLASSES_BRIDGE[3])
+
+        composite_img = draw_composite(surface, mask_rects, clear_image, blurred_image)
+        # Transform PIL image to PyGame Surface.
+        blit_img(surface, composite_img)
+
+        clear_glasses(surface, composite_img)
+
+        draw_glasses(surface, glasses_rects, bridge)
+
+        pygame.display.update()
+
+
+def ease_in_out_back(x):
+    """ From https://easings.net/#easeInOutBack.
+    :param x:
+    :return:
+    """
+    c1 = 1.70158
+    c2 = c1 * 1.525
+
+    if x < 0.5:
+        return (pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2)) / 2
+    else:
+        return (pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2
