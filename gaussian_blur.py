@@ -135,8 +135,8 @@ def kernel_sd_function(color):
     """
     x = (int(color[0]) + int(color[1]) + int(color[2])) / 765
     # return (-10 * x) + 10
-    # return 10 * math.pow(x - 1, 2)
-    return 10 * math.pow(x - 1, 4)
+    return 10 * math.pow(x - 1, 2)
+    # return 10 * math.pow(x - 1, 4)
 
 
 def calculate_kernel_values_from_colormap(cm):
