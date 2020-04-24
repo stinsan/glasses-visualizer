@@ -6,6 +6,7 @@ import os
 from monodepth2.test_simple import test_simple
 from tkinter.filedialog import askopenfilename
 from gaussian_blur import *
+from scratches import *
 import colorblind
 import glasses_animation as glasses
 import light_detection as ld
@@ -598,6 +599,15 @@ if __name__ == '__main__':
 
                         else:
                             glasses.start_down_animation(screen, orig_img, blurred_img)
+
+                # ------------------------------------------------------------------------------------ GLASSES DRAWING
+                elif 360 > mouse_pos[1] > 140:  # mouse is in y range of glasses
+                    if 50 < mouse_pos[0] < 350:  # mouse is in left lense
+                        draw_scratch(screen, curr_disp_img, mouse_pos[0], mouse_pos[1])# call to make scratch
+                    elif 500 < mouse_pos[0] < 800: # mouse is in right lense
+                        print(mouse_pos[0])
+                        draw_smudge(screen, curr_disp_img, mouse_pos[0], mouse_pos[1])# call to make smudge
+
 
             # Key press
             """TODO: Change the values of myopia and hyperopia, have a pop-up to display the values"""
